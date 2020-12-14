@@ -3,7 +3,6 @@ from tkinter import *
 fenetre = Tk()
 fenetre.geometry("1200x900")
 Label(fenetre, text = 'score').pack(padx = 20,pady = 0)
-<<<<<<< HEAD
 Button(fenetre, text = 'Nouvelle partie').pack(side = 'right' )
 Button(fenetre, text = 'Quitter', command = fenetre.destroy).pack(side = 'right')
 
@@ -22,8 +21,3 @@ def actualisertir():
     Canevas.move('tir', 0, 10)
     Canevas.update()
     fenetre.after(200, actualisertir)
-=======
-Button(fenetre, text = 'Nouvelle partie').pack(side = 'left', )
-Button(fenetre, text = 'Quitter').pack(side = 'left', )
-fenetre.mainloop()
->>>>>>> 90fdf1daa0897eaa65ba14c27a67ecfed2a282eb
