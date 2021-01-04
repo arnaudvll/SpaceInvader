@@ -1,6 +1,7 @@
 from tkinter import *
 from random import randint
 import math
+import time
 
 
 def DeplacementAvant() :
@@ -35,8 +36,8 @@ def DeplacementArriere() :
 
 def tiralien(): 
     [xmin,ymin,xmax,ymax] = canevas.coords(alien)
-    canevas.create_line( xmin + (xmax-xmin)/2, ymin+20, xmax - (xmax-xmin)/2 , ymax+20, width = 2, fill = 'red', tag='tira')
-    fenetre.after(randint(1000,6000),tiralien)
+    canevas.create_line( xmin + (xmax-xmin)/2, ymax, xmax - (xmax-xmin)/2 , ymax+25, width = 2, fill = 'red', tag='tira')
+    fenetre.after(randint(5000,20000),tiralien)
 
 def actualisertiralien():
     canevas.move('tira', 0, 10)
@@ -45,9 +46,9 @@ def actualisertiralien():
 
 def touchealien():
     for i in canevas.find_withtag('tira'):
-        if canevas.coords(i)[3] == canevas.coords(ok)[1] and canevas.coords(ok)[0]<canevas.coords(i)[0]<canevas.coords(ok)[2]:
+        if canevas.coords(i)[3] == canevas.coords(ok.vaiss)[1] and canevas.coords(ok.vaiss)[0]<canevas.coords(i)[0]<canevas.coords(ok.vaiss)[2]:
             canevas.delete(i)
-            canevas.delete(ok)
+            vie.set(vie.get()-1)
     fenetre.after(1,touchealien)
 
 
@@ -61,16 +62,15 @@ def supptiralien():
 class Vaisseau():
     def __init__(self,canvas):
         self.xmin=10
-        self.ymin=hauteur - 210
-        self.xmax=110
+        self.ymin=hauteur - 50
+        self.xmax=50
         self.ymax=hauteur - 10
         self.canevas=canvas
         self.vaiss=self.canevas.create_rectangle(self.xmin,self.ymin,self.xmax,self.ymax, outline= 'white', fill = 'blue')
 
     def tirvaisseau(self):
-        global ok
         [xmin,ymin,xmax,ymax] = canevas.coords(self.vaiss)
-        canevas.create_line( xmin + (xmax-xmin)/2 , ymin+20, xmax - (xmax-xmin)/2 , ymax-20, width = 2, fill = 'blue', tag='tirv')
+        canevas.create_line( xmin + (xmax-xmin)/2 ,ymin-25 , xmax - (xmax-xmin)/2 , ymin, width = 2, fill = 'blue', tag='tirv')
         
 
     def actualisertirvaisseau(self):
@@ -97,11 +97,13 @@ def clavier(event):
     if event.keysym == 'space':
         ok.tirvaisseau()
 
+
 fenetre = Tk()
-    
     
 fenetre.geometry("1200x900")
 Label(fenetre, text = 'score').pack(padx = 20,pady = 0)
+
+
 
 
 largeur=640
@@ -112,14 +114,17 @@ canevas.pack(padx=5,pady=5)
 canevas.bind_all('<Key>', clavier)
 
 
-#ok=canevas.create_rectangle(300,200,400,300, outline= 'white', fill = 'red')
+vie=IntVar(value=3)
+Label(fenetre, textvariable=vie).pack(side='right')
+Label(fenetre, text='Nombre de vies restantes: ').pack(side='right')
+
+
+Button(fenetre, text = 'Nouvelle partie').pack(side = 'left', )
+
 ok=Vaisseau(canevas)
 ok.actualisertirvaisseau()
 ok.supptirvaisseau()
 ok.touchevaisseau()
-
-
-Button(fenetre, text = 'Nouvelle partie').pack(side = 'left', )
 
 X0=10
 Y0=10
@@ -128,11 +133,13 @@ Y1=60
 alien = canevas.create_rectangle(X0,Y0,X1,Y1, outline= 'white', fill = 'red')
 DeplacementAvant()
 
-
-#tiralien()
-#actualisertiralien()
-#supptiralien()
-#touchealien()
+fenetre.after(randint(2000,10000),tiralien)
+actualisertiralien()
+supptiralien()
+touchealien()
 fenetre.mainloop()
+
+
+
 
 
