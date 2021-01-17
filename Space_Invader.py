@@ -6,7 +6,7 @@ To do: rajouter différents niveaux + boss de fin
 '''
 
 
-from tkinter import *  #importation de tkinter
+from tkinter import Tk, Label, Button, Canvas, PhotoImage, IntVar, Menu  #importation de tkinter
 from tkinter.messagebox import showinfo
 from random import randint #importation de la fonction aléatoire
  
