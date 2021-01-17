@@ -1,4 +1,13 @@
+'''
+Objectif du fichier: Jeu Space Invaders classique avec 3 vies et affichage du score
+Date de réalisation: du 14/12 au 17/01
+Par qui ? : CHOURAQUI Maxime, SCHURCK Alexandre, VILLE Arnaud
+To do: rajouter différents niveaux + boss de fin
+'''
+
+
 from tkinter import *  #importation de tkinter
+from tkinter.messagebox import showinfo
 from random import randint #importation de la fonction aléatoire
  
 class Alien (): #la classe alien va nous permettre de gerer les aliens individuellement
@@ -45,11 +54,22 @@ class Game(): #classe permettant de gérer la partie
         self.variable=Label(fenetre, textvariable=self.vie)
         self.variable.pack(side='right')
         self.text = Label(fenetre, text='Nombre de vies restantes: ')
-        self.fin = Label(fenetre, text='game over')
-        self.win = Label(fenetre, text='victoire')
+        self.fin = Label(fenetre, text='Game Over')
+        self.win = Label(fenetre, text='Victoire')
         self.text.pack(side='right')
         self.bloc=[] #liste de stockage des blocs
         self.vais='' #stockage de notre vaisseau
+        self.text2=Label(fenetre, text='Votre score: ')
+        self.text2.pack(side='top')
+        self.score=IntVar(value=0)
+        self.affscore=Label(fenetre ,textvariable=self.score)
+        self.affscore.pack(side='top')
+        self.text3=Label(fenetre, text='Meilleur score: ')
+        self.text3.pack(side='left')
+        self.hscore=IntVar()
+        self.affhscore=Label(fenetre, textvariable = self.hscore)
+        self.affhscore.pack(side='left')
+        
 
     def start_game(self): #fonction qui execute toutes les fonctions necessaire au jeu
         self.create_vaisseau() 
@@ -65,6 +85,9 @@ class Game(): #classe permettant de gérer la partie
         self.create_bloc()
         self.bloc_touche()
         self.victoire()
+        self.fhighscore()
+        self.fin.pack_forget()
+        self.win.pack_forget()
         
 
     def create_aliens(self): #fonction permettant de créer les objets aliens et de les stocker dans la liste 
@@ -77,16 +100,7 @@ class Game(): #classe permettant de gérer la partie
     def create_vaisseau(self): #fonction qui créer le vaisseau
         self.vaiss=self.canvas.create_image(250,400, image=self.image_vaisseau)
         
-    def game_over(self): #fonction qui verifie en continue que les vie ne sont pas à 0
-        if self.vie.get() ==0: #si les vie sont a 0, on reinitialise tous les parametres
-            self.canvas.delete(self.vaiss)
-            self.aliens=[]
-            self.supp_bloc()
-            self.vais=''
-            self.vie.set(3)
-            self.fin.pack(side='left') #on affiche le bouton defaite
-            self.bouton.pack(side='right') #on repack le bouton nouvelle partie pour recommencer
-        fenetre.after(1,self.game_over)    
+
     
     def deplacement_avant(self): #foncton permettant de gere le deplacement des aliens vers la droite
         alienfin =self.aliens[-1] #on regarde l'alien le plus a droite 
@@ -98,7 +112,7 @@ class Game(): #classe permettant de gérer la partie
                 alien.move_avant() #sinon, on fait avancer chaque alien vers la droite
             fenetre.after(50,self.deplacement_avant) #et on relance cette fonction
         
-    def deplacement_arriere(self): #foncton permettant de gere le deplacement des aliens vers la gauche
+    def deplacement_arriere(self): #foncton permettant de gerer le deplacement des aliens vers la gauche
         aliendebut =self.aliens[0] #on regarde l'alien le plus a gauche
         X,Y=aliendebut.GetCoords()
         if X <= 20: #si il arrive au bord gauche du canvas,
@@ -148,25 +162,26 @@ class Game(): #classe permettant de gérer la partie
             x,y=alien.GetCoords()
             for i in self.canvas.find_withtag('tirv'):
                 if i in self.canvas.find_overlapping(x,y,x+l,y+h):
+                    self.score.set(self.score.get()+50)
                     self.aliens.remove(alien)
                     self.canvas.delete(i) 
                     alien.delete_alien()            
         fenetre.after(1, self.touche_vaisseau)
         
     
-    def actualiser_tir_vaisseau(self):
+    def actualiser_tir_vaisseau(self): #fonction permettant d'acualiser les tirs du vaisseau pour qu'ils parcourent le canvas vers le haut
         self.canvas.move('tirv', 0, -20)
         self.canvas.update()
         fenetre.after(100, self.actualiser_tir_vaisseau)
 
 
-    def supp_tir_vaisseau(self):
+    def supp_tir_vaisseau(self): 
         for i in self.canvas.find_withtag('tirv'):
             if self.canvas.coords(i)[1] < 20:
                 self.canvas.delete(i)
         fenetre.after(1000, self.supp_tir_vaisseau)
         
-    def touche_alien(self):    
+    def touche_alien(self): #fonction permettant de regarder si un tir d'un alien touche le vaisseau
         for i in self.canvas.find_withtag('tira'):
             x,y=self.canvas.coords(self.vaiss)[0],self.canvas.coords(self.vaiss)[1]
             if i in self.canvas.find_overlapping(x,y,x+self.l_vaiss,y+self.h_vaiss):
@@ -174,47 +189,99 @@ class Game(): #classe permettant de gérer la partie
                 self.vie.set(self.vie.get()-1)
         fenetre.after(1,self.touche_alien)
 
-    def deplacement(self,event):
+    def deplacement(self,event): #fonction permettant de gérer les déplacements du vaisseau à droite et à gauche ainsi que la création du tir
         key=event.keysym
         x=self.canvas.coords(self.vaiss)[0]
         if key == 'space':
             [xmin,ymin] = self.canvas.coords(self.vaiss)
             self.canvas.create_line( xmin  , ymin-20, xmin  , ymin, width = 2, fill = 'blue', tag='tirv')
-        if x>20 and x <580:
+        if x>40 and x <600:
             if key=="Left":
                 self.canvas.move(self.vaiss, -20 , 0)
             if key=="Right":
                 self.canvas.move(self.vaiss, 20 , 0)
-        if x<=20 :
+        if x<=40 :
             if key=="Right":
                 self.canvas.move(self.vaiss, 20 , 0)
-        if x >=580:
+        if x >=600:
             if key=="Left":
                 self.canvas.move(self.vaiss, -20 , 0)
     
-    def victoire (self):
-        if self.aliens == []:
+    def victoire (self): #en cas de victoire (plus d'aliens), réinitialise le jeu 
+        if self.aliens == [] and self.score.get() == 250:
+            if self.score.get() != 0:
+                self.fscore(self.score.get())
+                self.score.set(0)
+                self.fhighscore()
+            for i in self.canvas.find_withtag('tira'):
+                self.canvas.delete(i)
+            for i in self.canvas.find_withtag('tirv'):
+                self.canvas.delete(i)
+            for i in self.aliens:
+                i.delete_alien()
             self.canvas.delete(self.vaiss)
-            self.aliens=[]
             self.supp_bloc()
             self.vais=''
             self.vie.set(3)
-            self.win.pack(side='left')
+            self.win.pack(side='top')
             self.bouton.pack(side='right')
         fenetre.after(1,self.victoire)    
 
-    def supp_bloc(self):
+    def game_over(self): #fonction qui verifie en continue que les vie ne sont pas à 0
+        if self.vie.get() == 0 : #si les vie sont a 0, on reinitialise tous les parametres
+            if self.score.get() != 0:
+                self.fscore(self.score.get())
+                self.score.set(0)
+                self.fhighscore()
+            for i in self.canvas.find_withtag('tira'):
+                self.canvas.delete(i)
+            for i in self.canvas.find_withtag('tirv'):
+                self.canvas.delete(i)
+            for i in self.aliens:
+                i.delete_alien()
+            self.aliens=[]
+            self.canvas.delete(self.vaiss)
+            self.supp_bloc()
+            self.vais=''
+            self.vie.set(3)
+            self.fin.pack(side='top') #on affiche le bouton defaite
+            self.bouton.pack(side='right') #on repack le bouton nouvelle partie pour recommencer
+        fenetre.after(1,self.game_over)    
+
+    def supp_bloc(self): #permet d'effacer les blocs en cas de victoire ou défaite
         for brick in self.bloc :
             self.canvas.delete(brick)
             self.bloc.remove(brick) 
 
-    
-    
+    def fscore(self,x): #ajoute le score de la partie au fichier texte highscore
+        h=open('highscore.txt','a')
+        h.write(str(x) + ' \n')
+        h.close()    
 
+    def fhighscore(self): #retourne la valeur la plus grande dans le fichier texte highscore
+        h=open('highscore.txt','r')
+        hs=h.readlines()   
+        h.close()  
+        self.hscore.set(max(hs))
+
+    
+    
+def apropos():
+    showinfo(title = 'A propos', message = 'Space Invaders\n(C)\nA.V / M.C / A.S')
         
-fenetre = Tk()
-fenetre.geometry("1200x900")       
-image_alien = PhotoImage(file ="img_alien.ppm")
+fenetre = Tk() #création de la fenetre
+fenetre.title('Space Invaders')
+fenetre.geometry("1200x900") 
+
+menubar = Menu(fenetre) #création de la barre menu
+menugeneral = Menu(menubar, tearoff = 0)
+menugeneral.add_command(label = 'Quitter', command = fenetre.destroy)
+menugeneral.add_command(label = 'A propos', command = apropos)
+menubar.add_cascade(label = 'Menu', menu = menugeneral)
+
+fenetre.config(menu = menubar) #affichage du menu
+
+image_alien = PhotoImage(file = "img_alien.ppm")
 h,l=image_alien.height(),image_alien.width()
         
 jeu=Game()
